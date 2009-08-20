@@ -10,16 +10,10 @@ module Main where
 applyFifthPowers targetNum digitPlace sumSoFar x =
     fifthPowers (targetNum + (x*10^digitPlace)) (digitPlace - 1) (sumSoFar + (x^5))
 
-fifthPowers targetNum digitPlace sumSoFar =
-    if targetNum > 354294
-    then
-        0
-    else
-        if digitPlace == 0
-        then
-            sum (map (addLastDigit targetNum sumSoFar) [0..9])
-        else
-            sum (map (applyFifthPowers targetNum digitPlace sumSoFar) [0..9])
+fifthPowers targetNum digitPlace sumSoFar
+    | targetNum > 354294 = 0
+    | digitPlace == 0    = sum (map (addLastDigit targetNum sumSoFar) [0..9])
+    | otherwise          = sum (map (applyFifthPowers targetNum digitPlace sumSoFar) [0..9])
 
 addLastDigit targetNum sumSoFar x
     | (t == sumSoFar + x^5) && (t /= 1) = t
