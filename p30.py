@@ -1,5 +1,3 @@
-MAX = 354294
-
 def fifthPowers(targetNum=0, digitPlace=5, sumSoFar=0, total=0):
     if digitPlace == 0:
         for x in xrange(0, 10):
