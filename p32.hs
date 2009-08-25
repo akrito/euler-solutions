@@ -1,5 +1,6 @@
 module Main where
 import List
+import Euler
 main = do
   putStrLn $ show $ ans
 
@@ -40,16 +41,6 @@ pandigitals ps
       r = snd p
 
 inR rs (n1, n2) = sort (toDigits ((toNum n1) * (toNum n2))) == sort rs
-
-toDigits :: (Integral t) => t -> [t]
-toDigits n
-    | r == n    = [r]
-    | otherwise = toDigits q ++ [r]
-    where (q,r) = divMod n 10
-
-toNum ds
-    | ds == []  = 0
-    | otherwise = (last ds) + 10 * (toNum $ reverse $ tail $ reverse ds)
 
 dups = map (\(x,y) -> (toNum x) * (toNum y)) (pandigitals $ aggPick5 [] [1..9])
 ans = sum $ nub $ dups
