@@ -1,12 +1,14 @@
 module Euler where
 
-toDigits :: (Integral t) => t -> [t]
-toDigits n
+toDigitsBase n base
     | r == n    = [r]
-    | otherwise = toDigits q ++ [r]
-    where (q,r) = divMod n 10
+    | otherwise = (toDigitsBase q base) ++ [r]
+    where (q,r) = divMod n base
 
-toNum ds
+toDigits n = toDigitsBase n 10
+
+toNumBase ds base
     | ds == []  = 0
-    | otherwise = (last ds) + 10 * (toNum $ reverse $ tail $ reverse ds)
+    | otherwise = (last ds) + base * (toNumBase (reverse $ tail $ reverse ds) base )
 
+toNum ds = toNumBase ds 10
