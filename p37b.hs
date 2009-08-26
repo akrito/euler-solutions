@@ -18,16 +18,6 @@ isPrime n
     | n < 2          = False
     | otherwise      = all ((/= 0) . (mod n)) [2..truncate (sqrt (fromIntegral n))]
 
-truncated n = map toNum $ (tail . init . tails . toDigits) n ++ (tail . init . inits . toDigits) n
+truncated n = (++) [n] $ map toNum $ (tail . init . tails . toDigits) n ++ (tail . init . inits . toDigits) n
 
-areTruncatedPrimes n = foldr (\x zs -> if not (isPrime x) then False else zs) True (truncated n)
-
-findTruncatedPrimes sum count (n:ns)
-    | not (isPrime n)     = findTruncatedPrimes sum count ns
-    | iP && (count == 10) = sum ++ [n] -- we're done!
-    | iP                  = findTruncatedPrimes (sum ++ [n]) (count + 1) ns
-    | otherwise           = findTruncatedPrimes sum count ns
-    where
-      iP = areTruncatedPrimes n
-
-ans = sum $ findTruncatedPrimes [] 0 [2 * k + 1 | k <- [5..]]
+ans = sum $ take 11 $ filter ((all isPrime) . truncated) [2 * k + 1 | k <- [5..]]
