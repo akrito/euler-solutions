@@ -12,3 +12,8 @@ toNumBase ds base
     | otherwise = (last ds) + base * (toNumBase (reverse $ tail $ reverse ds) base )
 
 toNum ds = toNumBase ds 10
+
+isPrime :: (Integral a) => a -> Bool
+isPrime n
+    | n < 2     = False
+    | otherwise = all ((/= 0) . (mod n)) [2..truncate (sqrt (fromIntegral n))]
