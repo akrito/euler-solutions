@@ -14,10 +14,6 @@ main = do
 --
 --NOTE: 2, 3, 5, and 7 are not considered to be truncatable primes.
 
-isPrime n
-    | n < 2          = False
-    | otherwise      = all ((/= 0) . (mod n)) [2..truncate (sqrt (fromIntegral n))]
-
-truncated n = (++) [n] $ map toNum $ (tail . init . tails . toDigits) n ++ (tail . init . inits . toDigits) n
+truncated n = n:(map toNum $ concatMap (tail . init) [tails ns, inits ns]) where ns = toDigits n
 
 ans = sum $ take 11 $ filter ((all isPrime) . truncated) [2 * k + 1 | k <- [5..]]
