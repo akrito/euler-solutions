@@ -1,6 +1,5 @@
 from math import sqrt
 from collections import defaultdict
-# find largest prime factor of 600851475143
 
 # Factor x:
 # starting with 2, find a number that divides x.
