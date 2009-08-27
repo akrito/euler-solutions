@@ -11,5 +11,4 @@ def factors(x):
             return [i] + factors(x / i)
     return [x]
 
-print factors(600851475143)
-print factors(10)
+print factors(600851475143)[-1]

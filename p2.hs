@@ -1,7 +1,5 @@
 module Main where
-import Euler
-import List
-main = do print $ show $ ans
+main = do print ans
 
 fibs one two = (one + two):(fibs two (one + two))
 
