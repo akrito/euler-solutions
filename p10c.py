@@ -1,4 +1,3 @@
-from math import sqrt
-from sieve import raw_sieve
+from sieve import wheel_sieve
 
-print sum(raw_sieve(2000000))
+print sum(wheel_sieve(2000000))
