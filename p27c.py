@@ -23,27 +23,26 @@ Find the product of the coefficients, a and b, for the quadratic
 expression that produces the maximum number of primes for consecutive
 values of n, starting with n = 0.
 """
-from sieve import filtered_sieve
+from sieve import raw_sieve
 
 def is_prime(n, primes):
     N = abs(n)
-    I = len(primes)
-    i = 0
-    factor = 2
     if N < 2:
         return False
-    while factor**2 <= N:
-        if N % factor == 0:
+    if N == 2:
+        return True
+    if N % 2 == 0:
+        return False
+    if N < 1000:
+        return (primes[N] != 0)
+    i = 3
+    while i**2 <= N:
+        if N % i == 0:
             return False
-        if i == len(primes):
-            factor += 2
-            continue
-        i += 1
-        factor = primes[i]
+        i += 2
     return True
 
-nums = filtered_sieve(1000)
-primes = [x for x in nums if x != 0]
+primes = raw_sieve(1000)
 
 A = False
 B = False
