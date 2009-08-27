@@ -1,5 +1,5 @@
 t = 0
-for i in xrange(999, 0, -1):
+for i in xrange(999, 99, -1):
     for j in xrange(999, i - 1, -1):
         k = i * j
         if k <= t:
