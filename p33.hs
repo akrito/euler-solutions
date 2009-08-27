@@ -34,5 +34,4 @@ xCancelsAndReduces (n1,d1) x =
 
 improper = foldr (\(a,b) (c, d) -> (a*c,b*d)) (1, 1) $ filter canReduce fractions
 g = gcd (fst improper) (snd improper)
--- ugly hack 'cause I don't grok Haskell division
-ans = truncate $ (fromIntegral (snd improper)) / (fromIntegral g)
+ans = (snd improper) `div` g
