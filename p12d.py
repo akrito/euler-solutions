@@ -19,10 +19,8 @@ while divisors <= 500:
             TRI /= factor
         divisors *= factorcount
 
-        # 2->3, 3->5, 5->7, etc.
         _factor += 1
         factor = primes[_factor]
-        #factor += (1 + (factor & 1))
     if TRI != 1:
         divisors *= 2
     else:
