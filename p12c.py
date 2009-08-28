@@ -1,5 +1,3 @@
-from math import sqrt
-import sys
 tri = 1
 increment = 2
 divisors = 0
