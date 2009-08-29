@@ -19,8 +19,8 @@ isPrime n
     | otherwise = all ((/= 0) . (mod n)) [2..truncate (sqrt (fromIntegral n))]
 
 -- slow method from http://www.haskell.org/haskellwiki/Prime_numbers
---slowPrimes :: [Integer]
-showPrimes = 2:3:primes'
+slowPrimes :: [Integer]
+slowPrimes = 2:3:primes'
   where
     1:p:candidates = [6*k+r | k <- [0..], r <- [1,5]]
     primes'        = p : filter isPrime candidates
