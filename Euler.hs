@@ -1,4 +1,5 @@
 module Euler where
+import qualified Data.IntSet as I
 
 toDigitsBase n base
     | r == n    = [r]
@@ -27,6 +28,21 @@ slowPrimes = 2:3:primes'
     isPrime n      = all (not . divides n) $ takeWhile (\p -> p*p <= n) primes'
     divides n p    = n `mod` p == 0
 
+-- faster functional sieve. Would be faster if we mutated an array in-place
+sieve n = [2,3,5] ++ (map toInteger $ I.toAscList $ worker 5 (I.fromDistinctAscList ps))
+    where
+      ps = filter (<=n) [6*k + r | k <- [1..n `div` 6], r <- [1,5]]
+      worker x is
+          | (x*x) > n = is
+          | otherwise = worker (takeNext (x + 2) is) (removeMultiples x n is)
+
+takeNext n is
+    | I.member n is = n
+    | otherwise     = takeNext (n + 2) is
+
+removeMultiples x m is = is I.\\ (I.fromDistinctAscList $ takeWhile (<=m) $ map (x*) [x..])
+
+permute :: (Eq a) => [a] -> [[a]]
 permute ns = _permute (length ns) [] ns
 _permute n l r
     | length l == n = [l]
