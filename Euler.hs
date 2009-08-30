@@ -3,6 +3,7 @@ import qualified Data.IntSet as I
 import Control.Monad.ST
 import Data.Array.ST
 import Data.Array
+import Data.List
 
 toDigitsBase n base
     | r == n    = [r]
@@ -46,24 +47,22 @@ takeNext n is
 removeMultiples x m is = is I.\\ (I.fromDistinctAscList $ takeWhile (<=m) $ map (x*) [x..])
 
 -- imperative siege using a mutable array
-msieve n = _msieve n
 
-_msieve :: Int -> [Int]
-_msieve n = runST $ do
+arrSieve n = runST $ do
               -- nums is a mutable array of possible primes
-              nums <- newListArray (0,n-1) [x*(x `mod` 2) | x <- [0..]] :: ST s (STArray s Int Int)
-              writeArray nums 1 0
-              writeArray nums 2 2
+              nums <- newListArray (0,n-1) [(x `mod` 2) == 1| x <- [0..]] :: ST s (STUArray s Int Bool)
+              writeArray nums 1 False
+              writeArray nums 2 True
               -- find primes and mark out multiples
               b <- getBounds nums
-              sieveWorker 3 nums (snd b)
-              getElems nums
+              sieveWorker 3 nums $! snd b
+              unsafeFreeze nums
 
 sieveWorker n nums e = do
   if (n*n) > e then return () else
       do
         v <- readArray nums n
-        if v /= 0 then mRemoveMultiples n nums e else return ()
+        if v then mRemoveMultiples n nums e else return ()
         sieveWorker (n + 2) nums e
 
 mRemoveMultiples n nums e = _mRemoveMultiples n nums e 0
@@ -73,11 +72,11 @@ _mRemoveMultiples n nums e i = do
   if ind > e then return () else
       do
         markOut nums (n*(n + 2*i))
-        _mRemoveMultiples n nums e  (i + 1)
+        _mRemoveMultiples n nums e (i + 1)
 
-markOut nums i = writeArray nums i 0
+markOut nums i = writeArray nums i False
 
--- mermutations of a list
+-- permutations of a list
 permute :: (Eq a) => [a] -> [[a]]
 permute ns = _permute (length ns) [] ns
 _permute n l r
