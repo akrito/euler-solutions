@@ -4,6 +4,7 @@ import Control.Monad.ST
 import Data.Array.ST
 import Data.Array
 import Data.List
+import qualified Data.Array.Diff as D
 
 toDigitsBase n base
     | r == n    = [r]
@@ -46,7 +47,10 @@ takeNext n is
 
 removeMultiples x m is = is I.\\ (I.fromDistinctAscList $ takeWhile (<=m) $ map (x*) [x..])
 
--- imperative siege using a mutable array
+-- imperative sieve using a mutable array
+
+msieve n = foldl f [] $ Data.Array.assocs $ arrSieve n
+    where f xs (k,v) = if v then xs ++ [toInteger k] else xs
 
 arrSieve n = runST $ do
               -- nums is a mutable array of possible primes
@@ -54,27 +58,48 @@ arrSieve n = runST $ do
               writeArray nums 1 False
               writeArray nums 2 True
               -- find primes and mark out multiples
-              b <- getBounds nums
-              sieveWorker 3 nums $! snd b
+              --b <- getBounds nums
+              --nums `seq` sieveWorker 3 nums $! snd b
+              _sieveWorker n nums
               unsafeFreeze nums
 
-sieveWorker n nums e = do
-  if (n*n) > e then return () else
-      do
-        v <- readArray nums n
-        if v then mRemoveMultiples n nums e else return ()
-        sieveWorker (n + 2) nums e
+_sieveWorker n nums = mapM_ mr [3..(floor (sqrt (fromIntegral n)))]
+    where mr x = _mRemoveMultiples x nums (n - 1)
 
-mRemoveMultiples n nums e = _mRemoveMultiples n nums e 0
+sieveWorker n nums e
+    | (n*n) > e = return ()
+    | otherwise =
+        do
+          v <- readArray nums n
+          if v then _mRemoveMultiples n nums e else return ()
+          let n2 = n + 2
+          n2 `seq` sieveWorker n2 nums e
 
-_mRemoveMultiples n nums e i = do
-  let ind = (n*(n + 2*i))
-  if ind > e then return () else
-      do
-        markOut nums (n*(n + 2*i))
-        _mRemoveMultiples n nums e (i + 1)
+_mRemoveMultiples n nums e = mapM_ markOut [(n*(n + 2*i)) | i <- [0..((e `div` n) - n) `div` 2]]
+    where markOut x = writeArray nums x False
 
-markOut nums i = writeArray nums i False
+mRemoveMultiples n nums e i
+    | ind > e   = return ()
+    | otherwise = writeArray nums i False >> (i1 `seq` mRemoveMultiples n nums e i1)
+    where ind = (n*(n + 2*i))
+          i1  = i + 1
+
+-- sieve with Diff arrays
+
+dsieve n = foldl f [] $ D.assocs $ _sieve n
+    where f xs (k,v) = if v then xs ++ [toInteger k] else xs
+
+_sieve n = worker 2 $ D.listArray (0,n-1) ([False,False] ++ repeat True) :: (D.DiffArray Int Bool)
+    where
+      worker x is
+          | (x*x) >= n = is
+          | otherwise  = worker (dTakeNext (x + 1) is) (dRemoveMultiples x n is)
+
+dTakeNext n is
+    | is D.! n       = n
+    | otherwise  = dTakeNext (n + 1) is
+
+dRemoveMultiples x m is = is D.// [(a, False) | a <- (takeWhile (<m) $ map (x*) [x..])]
 
 -- permutations of a list
 permute :: (Eq a) => [a] -> [[a]]
