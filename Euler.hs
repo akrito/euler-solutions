@@ -1,10 +1,18 @@
+{-# OPTIONS -O2 -optc-O -XBangPatterns #-}
 module Euler where
 import qualified Data.IntSet as I
 import Control.Monad.ST
 import Data.Array.ST
 import Data.Array
+import Data.Array.Base
 import Data.List
+import Data.Bits
+import Data.Word
 import qualified Data.Array.Diff as D
+import qualified Data.Array.IO as O
+import Control.Monad
+
+-- conversions between int(eger)s and lists of int(eger)s
 
 toDigitsBase n base
     | r == n    = [r]
@@ -97,3 +105,26 @@ _permute n l r
     | length l == n = [l]
     | otherwise     = foldr (f l r) [] r
     where f l r d ans = ans ++ _permute n (l ++ [d]) (filter (\x -> x/= d) r)
+
+-- Don S's sieve
+
+donSieve n = runST $ do
+               -- a 0 in "a" is prime; a 1 is composite
+               -- "n" is the max
+               a <- newArray (2,n) 0 :: ST s (STUArray s Int Word8)
+               go a n 2
+               unsafeFreeze a
+
+-- "a" is the array
+-- "m" is the max
+-- "n" is the number to try
+go !a !m !n
+    | n*n > m   = return ()
+    | otherwise = do
+          e <- unsafeRead a n
+          if e == 0 then set (n*n)
+                    else go a m (n+1)
+    where
+      set !j
+          | j <= m    = unsafeWrite a j 1 >> set (j+n)
+          | otherwise = go a m (n+1)
