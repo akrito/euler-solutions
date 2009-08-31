@@ -128,3 +128,30 @@ go !a !m !n
       set !j
           | j <= m    = unsafeWrite a j 1 >> set (j+n)
           | otherwise = go a m (n+1)
+
+-- monadic sieve using an IO array
+
+iosieve n = do
+  marray <- ioarrSieve n
+  assocs <- O.getAssocs marray
+  return $ foldl f [] assocs
+    where f xs (k,v) = if v then xs ++ [toInteger k] else xs
+
+ioarrSieve n =
+    do
+      -- nums is a mutable array of possible primes
+      nums <- O.newListArray (0,n-1) (repeat True) :: IO (O.IOUArray Int Bool)
+      O.writeArray nums 1 False
+      -- find primes and mark out multiples
+      iosieveWorker n nums
+      return nums
+
+iosieveWorker !n !nums = do
+  mapM_ mr $ 2:[3,5..(floor (sqrt (fromIntegral n)))]
+    where mr !x = do
+            v <- O.readArray nums x
+            if v then iomRemoveMultiples x nums (n - 1) else return ()
+
+iomRemoveMultiples n !nums !e = mapM_ markOut [(n*(n + i)) | i <- [0..((e `div` n) - n)]]
+    where markOut !x = O.writeArray nums x False
+

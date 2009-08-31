@@ -1,4 +1,6 @@
 module Main where
 import Euler
 import qualified Data.IntSet as I
-main = do print $ sum $ sieve 2000000
+main = do
+  primes <- iosieve 100000
+  print $ sum primes
