@@ -36,7 +36,7 @@ slowPrimes = 2:3:primes'
     isPrime n      = all (not . divides n) $ takeWhile (\p -> p*p <= n) primes'
     divides n p    = n `mod` p == 0
 
--- faster functional sieve. Would be faster if we mutated an array in-place
+-- faster functional sieve. Uses a set of integers and wheel
 sieve n = [2,3,5] ++ (map toInteger $ I.toAscList $ worker 5 (I.fromDistinctAscList ps))
     where
       ps = filter (<=n) [6*k + r | k <- [1..n `div` 6], r <- [1,5]]
@@ -50,44 +50,29 @@ takeNext n is
 
 removeMultiples x m is = is I.\\ (I.fromDistinctAscList $ takeWhile (<=m) $ map (x*) [x..])
 
--- imperative sieve using a mutable array
+-- monadic sieve using a ST array
 
 msieve n = foldl f [] $ Data.Array.assocs $ arrSieve n
-    where f xs (k,v) = if v then xs ++ [toInteger k] else xs
+    where f !xs !(k,v) = if v then xs ++ [toInteger k] else xs
 
 arrSieve n = runST $ do
               -- nums is a mutable array of possible primes
-              nums <- newListArray (0,n-1) [(x `mod` 2) == 1| x <- [0..]] :: ST s (STUArray s Int Bool)
+              nums <- newListArray (0,n-1) (repeat True) :: ST s (STUArray s Int Bool)
               writeArray nums 1 False
-              writeArray nums 2 True
               -- find primes and mark out multiples
-              --b <- getBounds nums
-              --nums `seq` sieveWorker 3 nums $! snd b
               _sieveWorker n nums
               unsafeFreeze nums
 
-_sieveWorker n nums = mapM_ mr [3..(floor (sqrt (fromIntegral n)))]
-    where mr x = _mRemoveMultiples x nums (n - 1)
+_sieveWorker !n !nums = do
+  mapM_ mr $ 2:[3,5..(floor (sqrt (fromIntegral n)))]
+    where mr !x = do
+            v <- readArray nums x
+            if v then _mRemoveMultiples x nums (n - 1) else return ()
 
-sieveWorker n nums e
-    | (n*n) > e = return ()
-    | otherwise =
-        do
-          v <- readArray nums n
-          if v then _mRemoveMultiples n nums e else return ()
-          let n2 = n + 2
-          n2 `seq` sieveWorker n2 nums e
+_mRemoveMultiples n !nums !e = mapM_ markOut [(n*(n + i)) | i <- [0..((e `div` n) - n)]]
+    where markOut !x = writeArray nums x False
 
-_mRemoveMultiples n nums e = mapM_ markOut [(n*(n + 2*i)) | i <- [0..((e `div` n) - n) `div` 2]]
-    where markOut x = writeArray nums x False
-
-mRemoveMultiples n nums e i
-    | ind > e   = return ()
-    | otherwise = writeArray nums i False >> (i1 `seq` mRemoveMultiples n nums e i1)
-    where ind = (n*(n + 2*i))
-          i1  = i + 1
-
--- sieve with Diff arrays
+-- functional sieve with Diff arrays
 
 dsieve n = foldl f [] $ D.assocs $ _sieve n
     where f xs (k,v) = if v then xs ++ [toInteger k] else xs
@@ -105,6 +90,7 @@ dTakeNext n is
 dRemoveMultiples x m is = is D.// [(a, False) | a <- (takeWhile (<m) $ map (x*) [x..])]
 
 -- permutations of a list
+
 permute :: (Eq a) => [a] -> [[a]]
 permute ns = _permute (length ns) [] ns
 _permute n l r
