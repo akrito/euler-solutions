@@ -19,10 +19,13 @@ toNumBase ds base
 
 toNum ds = toNumBase ds 10
 
+-- test for primality
+
 isPrime :: (Integral a) => a -> Bool
+isPrime 2       = True
 isPrime n
     | n < 2     = False
-    | otherwise = all ((/= 0) . (mod n)) [2..truncate (sqrt (fromIntegral n))]
+    | otherwise = all ((/= 0) . (mod n)) $ 2:[3,5..truncate (sqrt (fromIntegral n))]
 
 -- slow method from http://www.haskell.org/haskellwiki/Prime_numbers
 slowPrimes :: [Integer]
